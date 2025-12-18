@@ -31,7 +31,6 @@ python data_processing/generate_esm2_t33.py ${data_path}
 Construct local curvature features and incorporate them into protein and ligand representations.
 
 ## Training mode
-We provide pre-trained model weights, which you can download via [best_model]()
 
 Evaluate the model using the following code.
 
