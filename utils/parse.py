@@ -1,0 +1,103 @@
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-m", "--mode", type=int, default=0)
+    parser.add_argument("-d", "--data", type=str, default="0")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--addNoise", type=str, default=None)
+    pair_interaction_mask = parser.add_mutually_exclusive_group()
+    pair_interaction_mask.add_argument("--use_y_mask", action='store_true', default=False)
+    pair_interaction_mask.add_argument("--use_equivalent_native_y_mask",
+                                       action='store_true', default=False)
+    parser.add_argument("--use_affinity_mask", type=int, default=0)
+    parser.add_argument("--affinity_loss_mode", type=int, default=1)
+    parser.add_argument("--pred_dis", type=int, default=1)
+    parser.add_argument("--posweight", type=int, default=8)
+    parser.add_argument("--relative_k", type=float, default=0.01)
+    parser.add_argument("-r", "--relative_k_mode", type=int, default=0)
+    parser.add_argument("--resultFolder", type=str, default="./result")
+    parser.add_argument("--label", type=str, default="")
+    parser.add_argument("--use-whole-protein", action='store_true', default=False)
+    parser.add_argument("--data-path", type=str, default="./pdbbind2020")
+    parser.add_argument("--exp-name", type=str, default="")
+    parser.add_argument("--tqdm-interval", type=float, default=0.1)
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--optim", type=str, default='adam', choices=['adam', 'adamw'])
+    parser.add_argument("--weight-decay", type=float, default=0.0)
+    parser.add_argument("--clip-grad", action='store_true', default=False)
+    parser.add_argument("--warmup-epochs", type=int, default=15)
+    parser.add_argument("--total-epochs", type=int, default=400)
+    parser.add_argument("--lr-scheduler", type=str, default="constant",
+                        choices=['constant', 'poly_decay', 'cosine_decay',
+                                 'cosine_decay_restart', 'exp_decay'])
+    parser.add_argument("--pocket-coord-huber-delta", type=float, default=3.0)
+    parser.add_argument("--coord-loss-function", type=str, default='SmoothL1',
+                        choices=['MSE', 'SmoothL1'])
+    parser.add_argument("--coord-loss-weight", type=float, default=1.0)
+    parser.add_argument("--pair-distance-loss-weight", type=float, default=1.0)
+    parser.add_argument("--pair-distance-distill-loss-weight", type=float, default=1.0)
+    parser.add_argument("--pocket-cls-loss-weight", type=float, default=1.0)
+    parser.add_argument("--pocket-distance-loss-weight", type=float, default=0.05)
+    parser.add_argument("--pocket-cls-loss-func", type=str, default='bce')
+    parser.add_argument("--use-compound-com-cls", action='store_true', default=False)
+    parser.add_argument("--compound-coords-init-mode", type=str,
+                        default="pocket_center_rdkit",
+                        choices=['pocket_center_rdkit', 'pocket_center',
+                                 'compound_center', 'perturb_3A',
+                                 'perturb_4A', 'perturb_5A', 'random'])
+    parser.add_argument('--trig-layers', type=int, default=1)
+    parser.add_argument('--distmap-pred', type=str, default='mlp',
+                        choices=['mlp', 'trig'])
+    parser.add_argument('--mean-layers', type=int, default=3)
+    parser.add_argument('--n-iter', type=int, default=5)
+    parser.add_argument('--inter-cutoff', type=float, default=10.0)
+    parser.add_argument('--intra-cutoff', type=float, default=8.0)
+    parser.add_argument('--refine', type=str, default='refine_coord',
+                        choices=['stack', 'refine_coord'])
+    parser.add_argument('--coordinate-scale', type=float, default=5.0)
+    parser.add_argument('--geometry-reg-step-size', type=float, default=0.001)
+    parser.add_argument('--add-attn-pair-bias', action='store_true', default=False)
+    parser.add_argument('--explicit-pair-embed', action='store_true', default=False)
+    parser.add_argument('--opm', action='store_true', default=False)
+    parser.add_argument('--add-cross-attn-layer', action='store_true', default=False)
+    parser.add_argument('--rm-layernorm', action='store_true', default=False)
+    parser.add_argument('--keep-trig-attn', action='store_true', default=False)
+    parser.add_argument('--pocket-radius', type=float, default=20.0)
+    parser.add_argument('--pocket-pred-layers', type=int, default=1)
+    parser.add_argument('--pocket-pred-n-iter', type=int, default=1)
+    parser.add_argument('--noise-for-predicted-pocket', type=float, default=5.0)
+    parser.add_argument('--center-dist-threshold', type=float, default=8.0)
+    parser.add_argument('--rm-LAS-constrained-optim', action='store_true', default=False)
+    parser.add_argument('--rm-F-norm', action='store_true', default=False)
+    parser.add_argument('--norm-type', type=str, default="per_sample",
+                        choices=['per_sample', '4_sample', 'all_sample'])
+    parser.add_argument("--sample-n", type=int, default=0)
+    parser.add_argument('--fix-pocket', action='store_true', default=False)
+    parser.add_argument('--pocket-idx-no-noise', action='store_true', default=False)
+    parser.add_argument('--ablation-no-attention', action='store_true', default=False)
+    parser.add_argument('--ablation-no-attention-with-cross-attn',
+                        action='store_true', default=False)
+    parser.add_argument('--redocking', action='store_true', default=False)
+    parser.add_argument('--redocking-no-rotate', action='store_true', default=False)
+    parser.add_argument('--use-esm2-feat', action='store_true', default=False)
+    parser.add_argument('--esm2-concat-raw', action='store_true', default=False)
+    parser.add_argument('--random-n-iter', action='store_true', default=False)
+    parser.add_argument('--test-random-rotation', action='store_true', default=False)
+    parser.add_argument('--train-ligand-torsion-noise', action='store_true', default=False)
+    parser.add_argument('--train-pred-pocket-noise', type=float, default=0.0)
+    parser.add_argument("--mixed-precision", type=str, default='no',
+                        choices=['no', 'fp16'])
+    parser.add_argument('--disable-tqdm', action='store_true', default=False)
+    parser.add_argument('--log-interval', type=int, default=100)
+    parser.add_argument('--disable-validate', action='store_true', default=False)
+    parser.add_argument('--disable-tensorboard', action='store_true', default=False)
+    parser.add_argument("--hidden-size", type=int, default=256)
+    parser.add_argument("--pocket-pred-hidden-size", type=int, default=128)
+    parser.add_argument("--stage-prob", type=float, default=0.5)
+    parser.add_argument("--local-eval", action='store_true', default=False)
+
+    return parser.parse_args()
+
